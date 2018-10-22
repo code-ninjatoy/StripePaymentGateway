@@ -1,0 +1,131 @@
+﻿@model StripePayments.Models.StripeChargeModel
+@{
+    ViewBag.Title = "Stripe Tutorial";
+}
+<link href="~/assets/Custome.css" rel="stylesheet" />
+
+
+
+           
+                        <h3>Payment</h3>
+                        <label for="fname">Accepted Cards</label>
+                        <div class="icon-container">
+                            <i class="fa fa-cc-visa" style="color:navy;"></i>
+                            <i class="fa fa-cc-amex" style="color:blue;"></i>
+                            <i class="fa fa-cc-mastercard" style="color:red;"></i>
+                            <i class="fa fa-cc-discover" style="color:orange;"></i>
+                        </div>
+                        <label for="ccnum">Credit card number</label>
+                        <input type="text" id="txtCardNumber" name="CardNumber" placeholder="1111-2222-3333-4444">
+                        <label for="expmonth">Exp Month</label>
+                        <input type="text" id="txtExpiryMonth" name="ExpiryMonth" placeholder="September">
+                        <div class="row">
+                            <div class="col-50">
+                                <label for="expyear">Exp Year</label>
+                                <input type="text" id="txtExpiryYear" name="ExpiryYear" placeholder="2018">
+                            </div>
+                            <div class="col-50">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="txtCvc" name="Cvc" placeholder="352">
+                            </div>
+                        </div>
+                   
+
+               
+
+
+    @using (Html.BeginForm("Charge", "Home", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form", id = "frmCharge" }))
+    {
+        @Html.AntiForgeryToken()
+        <dl class="dl-horizontal">
+            <dt>
+                <label for="cname">Name on Card</label>
+            </dt>
+            <dd>
+                <input type="text" id="txtCardHolderName" name="CardHolderName" placeholder="John More Doe">
+            </dd>
+            <dt>
+                <label for="cname">Amount</label>
+            </dt>
+            <dd>
+                <input type="text" id="txtAmount" name="Amount" placeholder="0.0">
+            </dd>
+
+        </dl>
+        <p>
+            @Html.HiddenFor(model => model.Token, new { id = "hdnToken" })
+            @Html.ActionLink("ProcessPayment", "Charge", null, new { id = "btnCharge", @class="btn" })
+        </p>
+    }
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+    <script type="text/javascript">
+        $('document').ready(function () {
+            Stripe.setPublishableKey('pk_test_ZwQQ3DpHRcIWDMKgVObfuSYl');
+
+
+
+            $('#btnCharge').on('click', function (e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                var cardno = $('#txtCardNumber').val();
+                var ucvc = $('#txtCvc').val();
+                var mn = $('#txtExpiryMonth').val();
+                var yy = $('#txtExpiryYear').val();
+                var amnt = $('#txtAmount').val();
+                var cardholname = $('#txtCardHolderName').val();
+
+                Stripe.card.createToken({
+                    number: cardno,
+                    cvc: ucvc,
+                    exp_month: mn,
+                    exp_year: yy
+                }, stripeResponseHandler);
+
+                //store card info
+                var cdate = mn + '/' + yy;
+                AddUserCardInfo(amnt, cardholname, cardno, cdate);
+
+            });
+
+            function stripeResponseHandler(status, response) {
+                var $form = $('#frmCharge');
+
+                if (response.error) {
+                    // Show the errors on the form
+                    alert(response.error.message);
+                }
+                else {
+                    //var cdate = mn + '/' + yy;
+                    //AddUserCardInfo(amnt, cardholname, cardno, cdate);
+                    // response contains id and card, which contains additional card details
+                    var token = response.id;
+                    // Insert the token into the form so it gets submitted to the server
+                    $('#hdnToken').val(token);
+                    // and submit
+                    $form.get(0).submit();
+                }
+            }
+
+            function AddUserCardInfo(amnt1, cardholname1, cardno1, expDate1) {
+
+                $.ajax({
+                    url: '/home/AddUserCardInfo/',
+                    type: 'POST',
+                    data: { amnt: amnt1, cardholname: cardholname1, cardno: cardno1, expDate: expDate1 },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data == 1) {
+                            console.log('data saved');
+                        }
+                        else if (data == 0) {
+                            console.log('something went wrong');
+                        }
+                    },
+                    error: function (x) { console.log('data not saved'); }
+                });
+            }
+        });
+    </script>

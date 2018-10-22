@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="Database1ModelStoreContainer" CdmEntityContainer="Database1Entities1">
+    <EntitySetMapping Name="tblStripes">
+      <EntityTypeMapping TypeName="Database1Model.tblStripe">
+        <MappingFragment StoreEntitySet="tblStripe">
+          <ScalarProperty Name="id" ColumnName="id" />
+          <ScalarProperty Name="amnt" ColumnName="amnt" />
+          <ScalarProperty Name="cardholname" ColumnName="cardholname" />
+          <ScalarProperty Name="cardno" ColumnName="cardno" />
+          <ScalarProperty Name="expDate" ColumnName="expDate" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+  </EntityContainerMapping>
+</Mapping>
